@@ -522,6 +522,29 @@ class ProviderConnector(Connector):
             items = kept
             notes.append(f"recency<={since_days}d: dropped={dropped} undated_kept={undated}")
 
+        # Optional transcript stage for platforms whose payload carries none
+        # (Instagram reels). Snapchat and TikTok supply theirs inline.
+        if kw.get("with_transcripts"):
+            from ..transcripts import DEFAULT_TRANSCRIPT_ACTORS, transcript_for_item
+            if self.platform in DEFAULT_TRANSCRIPT_ACTORS:
+                budget = int(kw.get("max_transcripts", 3))
+                got = 0
+                for it in [x for x in items if x.kind != "comment"][:budget]:
+                    t = transcript_for_item(self.platform, it.url,
+                                            raw_meta=it.raw_meta,
+                                            check_availability=False)
+                    if not t.ok:
+                        continue
+                    got += 1
+                    items.append(RawItem(
+                        external_id=f"{self.platform}:t:{it.external_id}",
+                        text=t.text, kind="transcript", url=it.url,
+                        author_ref=it.author_ref, published_at=it.published_at,
+                        extraction_method="read_full",
+                        raw_meta={"transcript_source": t.source,
+                                  "transcript_segments": t.segments}))
+                notes.append(f"transcripts={got}")
+
         notes.append(f"skipped={skipped}")
         return FetchResult(items=items,
                            access_status=PARTIAL if (partial and items) else OK,

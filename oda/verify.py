@@ -142,7 +142,8 @@ def verify_platform(platform: str, limit: int = 5,
 
     cap = conn.capability
     query = probe_query if probe_query is not None else ARABIC_PROBE.get(platform, "")
-    kw: dict = {"comments_per_post": comments_per_post, "max_comment_posts": 3}
+    kw: dict = {"comments_per_post": comments_per_post, "max_comment_posts": 3,
+                "with_transcripts": True, "max_transcripts": 2}
     if platform == "snapchat":
         if not usernames:
             for c in rep.checks:
@@ -323,10 +324,20 @@ def verify_platform(platform: str, limit: int = 5,
     for i in items:
         for s in ((i.raw_meta or {}).get("subtitle_languages") or []):
             sub_langs.add(str(s))
-    if have:
-        longest = max(len(str((i.raw_meta or {}).get("transcript", ""))) for i in have)
-        c.set(PASS, f"{len(have)}/{len(items)} item(s) carry a transcript "
-                    f"(longest {longest} chars)", items_with_transcript=len(have))
+    tr_items = [i for i in items if i.kind == "transcript"]
+    if tr_items or have:
+        pool = tr_items or have
+        longest = max(len(i.text if i.kind == "transcript"
+                          else str((i.raw_meta or {}).get("transcript", "")))
+                      for i in pool)
+        orig = [i for i in pool
+                if (i.raw_meta or {}).get("is_original_voice") is not False]
+        ar = sum(1 for i in pool if ARABIC_RE.search(i.text or ""))
+        c.set(PASS if orig else PARTIAL,
+              f"{len(pool)} transcript(s); longest {longest} chars; "
+              f"{ar} contain Arabic; {len(orig)} are the speaker's own language "
+              f"(not machine-translated)",
+              transcripts=len(pool), arabic=ar, original_voice=len(orig))
     elif sub_langs:
         arabic = [l for l in sub_langs if l.lower().startswith("ar")]
         c.set(PARTIAL,

@@ -130,6 +130,38 @@ class YouTubeConnector(Connector):
                                else {}),
                         },
                     ))
+        # Optional third stage: what the video actually SAYS. The description is
+        # the publisher's marketing; the spoken content is where complaints are.
+        notes = ["some videos had comments disabled"] if partial else []
+        if kw.get("with_transcripts") and video_ids:
+            from ..transcripts import transcript_for_item
+            got = skipped_nolang = 0
+            budget = int(kw.get("max_transcripts", 5))
+            for vid in video_ids[:budget]:
+                t = transcript_for_item(
+                    "youtube", f"https://www.youtube.com/watch?v={vid}",
+                    video_id=vid, want=tuple(kw.get("transcript_langs", ("ar", "en"))))
+                if not t.ok:
+                    skipped_nolang += 1
+                    continue
+                got += 1
+                items.append(RawItem(
+                    external_id=f"yt:t:{vid}", text=t.text, kind="transcript",
+                    url=f"https://www.youtube.com/watch?v={vid}",
+                    extraction_method="read_full",   # this IS what was said
+                    raw_meta={"video_id": vid, "transcript": t.text,
+                              "transcript_source": t.source,
+                              "transcript_segments": t.segments,
+                              "transcript_language": t.language,
+                              "original_language": t.original_language,
+                              "is_translated": t.is_translated,
+                              "is_auto_generated": t.is_auto_generated,
+                              "is_original_voice": t.is_original_voice,
+                              "available_languages": t.available_languages},
+                ))
+            notes.append(f"transcripts={got}/{min(len(video_ids), budget)} "
+                         f"(skipped {skipped_nolang} without a usable track)")
+
         return FetchResult(items=items, access_status="partial" if partial else OK,
                            http_code=code, endpoint=SEARCH,
-                           reason="some videos had comments disabled" if partial else None)
+                           reason="; ".join(notes) or None)

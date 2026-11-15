@@ -1,6 +1,6 @@
 [
   {
-    "platform": "snapchat",
+    "platform": "youtube",
     "usable": true,
     "blocked_reason": "",
     "checks": [
@@ -8,20 +8,23 @@
         "id": "C01",
         "name": "arabic_search",
         "label": "البحث بالعربية يُرجع نتائج",
-        "status": "NA",
-        "evidence": "profile-driven platform: no keyword search exists",
-        "detail": {}
+        "status": "PASS",
+        "evidence": "query 'مشاكل المتاجر الإلكترونية' -> 35 items, 35 containing Arabic",
+        "detail": {
+          "arabic_items": 35,
+          "total": 35
+        }
       },
       {
         "id": "C02",
         "name": "comments",
         "label": "جلب تعليقات المستخدمين لا الأوصاف فقط",
         "status": "PASS",
-        "evidence": "39 comment item(s) retrieved",
+        "evidence": "29 comment item(s) retrieved",
         "detail": {
           "examples": [
-            "Me and pedri has birthday sam day 25 november",
-            "Pedri 🫦❣️"
+            "أنت تقدم ما لا يريد أن يسمعه المبتدئ \nلكن حقيقة واحدة مؤلمة أفضل من 10",
+            "حفظك الله تعلمت منك كثير استاذ حسن"
           ]
         }
       },
@@ -30,11 +33,11 @@
         "name": "source_urls",
         "label": "كل عنصر له رابط مصدر",
         "status": "PASS",
-        "evidence": "44/44 items carry a source URL (100%)",
+        "evidence": "35/35 items carry a source URL (100%)",
         "detail": {
           "examples": [
-            "https://www.snapchat.com/@fcbarcelona/spotlight/W7_EDlXWTBiXAEEniNoMPwAAYd2xvcmRrZWZlAaHQusLlAaHQur8ZAAAAAA",
-            "https://www.snapchat.com/@fcbarcelona/spotlight/W7_EDlXWTBiXAEEniNoMPwAAYYXJpZGdpcnBnAaHL__2UAaHL_-qgAAAAAA"
+            "https://www.youtube.com/watch?v=Ejc2nAFM7pM",
+            "https://www.youtube.com/watch?v=Ejc2nAFM7pM&lc=Ugzgf38ee8WFf36PGYZ4AaABAg"
           ]
         }
       },
@@ -43,10 +46,10 @@
         "name": "author_and_date",
         "label": "اسم المؤلف وتاريخ النشر محفوظان",
         "status": "PASS",
-        "evidence": "author on 39/44, publish date on 44/44",
+        "evidence": "author on 33/35, publish date on 33/35",
         "detail": {
-          "authors": 39,
-          "dates": 44
+          "authors": 33,
+          "dates": 33
         }
       },
       {
@@ -54,14 +57,11 @@
         "name": "engagement",
         "label": "مقاييس التفاعل (مشاهدات/إعجابات/تعليقات/مشاركات)",
         "status": "PASS",
-        "evidence": "44/44 items carry metrics; fields seen: author_followers, comments_count, likes, saves, shares, views",
+        "evidence": "33/35 items carry metrics; fields seen: comments_count, likes, views",
         "detail": {
           "fields": [
-            "author_followers",
             "comments_count",
             "likes",
-            "saves",
-            "shares",
             "views"
           ]
         }
@@ -70,8 +70,8 @@
         "id": "C06",
         "name": "replies",
         "label": "الردود على التعليقات متاحة",
-        "status": "NA",
-        "evidence": "comments are returned inline; Snapchat exposes no reply threading",
+        "status": "PARTIAL",
+        "evidence": "commentThreads reports totalReplyCount (16 sampled item(s) have replies) but fetching the reply bodies needs a second comments.list call, which is not implemented",
         "detail": {}
       },
       {
@@ -79,10 +79,10 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 44 in 2.4s. Documented ceiling: NO KEYWORD SEARCH on any available actor: collection is driven by a list of usernames the operator supplies, so Snapchat is a MONITORING sou",
+        "evidence": "requested 4, received 35 in 23.2s. Documented ceiling: 10,000 quota units/day. search.list costs 100 units; commentThreads.list costs 1.",
         "detail": {
-          "requested": 5,
-          "received": 44
+          "requested": 4,
+          "received": 35
         }
       },
       {
@@ -90,11 +90,11 @@
         "name": "time_filter",
         "label": "التصفية الزمنية",
         "status": "PASS",
-        "evidence": "window of 180d honoured: 44 item(s) inside, 0 outside, 0 undated",
+        "evidence": "window of 180d honoured: 7 item(s) inside, 0 outside, 2 undated",
         "detail": {
-          "inside": 44,
+          "inside": 7,
           "outside": 0,
-          "undated": 0
+          "undated": 2
         }
       },
       {
@@ -102,7 +102,7 @@
         "name": "failure_behaviour",
         "label": "سلوك واضح عند الفشل",
         "status": "PASS",
-        "evidence": "empty/failed result reported explicitly as 'error' with reason 'actor=parseforge~snapchat-scraper returned 1 marker row(s) and no content: error=@zzzqqqxx' - no silent success",
+        "evidence": "empty/failed result reported explicitly as 'ok' with reason 'None' - no silent success",
         "detail": {}
       },
       {
@@ -110,20 +110,20 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.0 for 44 item(s) = $0.0 per 1,000",
+        "evidence": "measured $0.003 for 35 item(s) = $0.086 per 1,000",
         "detail": {
-          "spent_usd": 0.0,
-          "usd_per_1000": 0.0
+          "spent_usd": 0.003,
+          "usd_per_1000": 0.086
         }
       },
       {
         "id": "C11",
         "name": "saudi_reach",
         "label": "الوصول للجمهور السعودي/العربي",
-        "status": "FAIL",
-        "evidence": "0/44 sampled items are Arabic (0%)",
+        "status": "PASS",
+        "evidence": "35/35 sampled items are Arabic (100%)",
         "detail": {
-          "arabic_pct": 0
+          "arabic_pct": 100
         }
       },
       {
@@ -131,17 +131,19 @@
         "name": "transcription",
         "label": "تفريغ نصي لما يقوله الفيديو",
         "status": "PASS",
-        "evidence": "5/44 item(s) carry a transcript (longest 13 chars)",
+        "evidence": "2 transcript(s); longest 5900 chars; 2 contain Arabic; 2 are the speaker's own language (not machine-translated)",
         "detail": {
-          "items_with_transcript": 5
+          "transcripts": 2,
+          "arabic": 2,
+          "original_voice": 2
         }
       }
     ],
-    "sample_items": 44,
-    "elapsed_s": 2.4,
-    "cost_usd": 0.0,
+    "sample_items": 35,
+    "elapsed_s": 23.2,
+    "cost_usd": 0.003,
     "notes": [
-      "status=ok reason=search_actor=parseforge~snapchat-scraper rows=5 mapped=5 | embedded_comments=39 | skipped=0"
+      "status=ok reason=transcripts=2/2 (skipped 0 without a usable track)"
     ]
   },
   {
@@ -154,10 +156,10 @@
         "name": "arabic_search",
         "label": "البحث بالعربية يُرجع نتائج",
         "status": "PASS",
-        "evidence": "query 'مشاكل متجر سلة' -> 22 items, 22 containing Arabic",
+        "evidence": "query 'مشاكل متجر سلة' -> 21 items, 21 containing Arabic",
         "detail": {
-          "arabic_items": 22,
-          "total": 22
+          "arabic_items": 21,
+          "total": 21
         }
       },
       {
@@ -169,7 +171,7 @@
         "detail": {
           "examples": [
             "طيب كم لازم تكون ؟",
-            "انا ماليش في المتاجر بس السنة دي كان معاي مشروع في شوبيفاي وصراحة حاجة"
+            "نعرف من وراء هذا الهجوم المعتاد على سلة 👌🏽😂"
           ]
         }
       },
@@ -178,11 +180,11 @@
         "name": "source_urls",
         "label": "كل عنصر له رابط مصدر",
         "status": "PASS",
-        "evidence": "22/22 items carry a source URL (100%)",
+        "evidence": "21/21 items carry a source URL (100%)",
         "detail": {
           "examples": [
             "https://www.tiktok.com/@soladig2/video/7606833951134567701",
-            "https://www.tiktok.com/@sociall_team/video/7551088905941028152"
+            "https://www.tiktok.com/@itechapp/video/7612390983015091477"
           ]
         }
       },
@@ -191,10 +193,10 @@
         "name": "author_and_date",
         "label": "اسم المؤلف وتاريخ النشر محفوظان",
         "status": "PASS",
-        "evidence": "author on 22/22, publish date on 22/22",
+        "evidence": "author on 21/21, publish date on 21/21",
         "detail": {
-          "authors": 22,
-          "dates": 22
+          "authors": 21,
+          "dates": 21
         }
       },
       {
@@ -202,7 +204,7 @@
         "name": "engagement",
         "label": "مقاييس التفاعل (مشاهدات/إعجابات/تعليقات/مشاركات)",
         "status": "PASS",
-        "evidence": "22/22 items carry metrics; fields seen: comments_count, likes, saves, shares, views",
+        "evidence": "21/21 items carry metrics; fields seen: comments_count, likes, saves, shares, views",
         "detail": {
           "fields": [
             "comments_count",
@@ -228,10 +230,10 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 22 in 68.5s. Documented ceiling: Billed per result by the provider (~$1.70-3.70 / 1,000 as of Nov 2026).",
+        "evidence": "requested 4, received 21 in 27.7s. Documented ceiling: Billed per result by the provider (~$1.70-3.70 / 1,000 as of Nov 2026).",
         "detail": {
-          "requested": 5,
-          "received": 22
+          "requested": 4,
+          "received": 21
         }
       },
       {
@@ -239,9 +241,9 @@
         "name": "time_filter",
         "label": "التصفية الزمنية",
         "status": "PASS",
-        "evidence": "window of 180d honoured: 9 item(s) inside, 0 outside, 0 undated",
+        "evidence": "window of 180d honoured: 7 item(s) inside, 0 outside, 0 undated",
         "detail": {
-          "inside": 9,
+          "inside": 7,
           "outside": 0,
           "undated": 0
         }
@@ -259,10 +261,10 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.1234 for 22 item(s) = $5.609 per 1,000",
+        "evidence": "measured $0.0893 for 21 item(s) = $4.252 per 1,000",
         "detail": {
-          "spent_usd": 0.1234,
-          "usd_per_1000": 5.609
+          "spent_usd": 0.0893,
+          "usd_per_1000": 4.252
         }
       },
       {
@@ -270,7 +272,7 @@
         "name": "saudi_reach",
         "label": "الوصول للجمهور السعودي/العربي",
         "status": "PASS",
-        "evidence": "22/22 sampled items are Arabic (100%)",
+        "evidence": "21/21 sampled items are Arabic (100%)",
         "detail": {
           "arabic_pct": 100
         }
@@ -289,15 +291,15 @@
         }
       }
     ],
-    "sample_items": 22,
-    "elapsed_s": 68.5,
-    "cost_usd": 0.1234,
+    "sample_items": 21,
+    "elapsed_s": 27.7,
+    "cost_usd": 0.0893,
     "notes": [
-      "status=ok reason=search_actor=clockworks~tiktok-scraper rows=5 mapped=5 | comments_actor=clockworks~tiktok-comments-scraper rows=17 mapped=17 | skipped=0"
+      "status=ok reason=search_actor=clockworks~tiktok-scraper rows=4 mapped=4 | comments_actor=clockworks~tiktok-comments-scraper rows=17 mapped=17 | skipped=0"
     ]
   },
   {
-    "platform": "youtube",
+    "platform": "snapchat",
     "usable": true,
     "blocked_reason": "",
     "checks": [
@@ -305,23 +307,20 @@
         "id": "C01",
         "name": "arabic_search",
         "label": "البحث بالعربية يُرجع نتائج",
-        "status": "PASS",
-        "evidence": "query 'مشاكل المتاجر الإلكترونية' -> 84 items, 84 containing Arabic",
-        "detail": {
-          "arabic_items": 84,
-          "total": 84
-        }
+        "status": "NA",
+        "evidence": "profile-driven platform: no keyword search exists",
+        "detail": {}
       },
       {
         "id": "C02",
         "name": "comments",
         "label": "جلب تعليقات المستخدمين لا الأوصاف فقط",
         "status": "PASS",
-        "evidence": "79 comment item(s) retrieved",
+        "evidence": "32 comment item(s) retrieved",
         "detail": {
           "examples": [
-            "أنت تقدم ما لا يريد أن يسمعه المبتدئ \nلكن حقيقة واحدة مؤلمة أفضل من 10",
-            "حفظك الله تعلمت منك كثير استاذ حسن"
+            "Me and pedri has birthday sam day 25 november",
+            "Pedri 🫦❣️"
           ]
         }
       },
@@ -330,11 +329,11 @@
         "name": "source_urls",
         "label": "كل عنصر له رابط مصدر",
         "status": "PASS",
-        "evidence": "84/84 items carry a source URL (100%)",
+        "evidence": "36/36 items carry a source URL (100%)",
         "detail": {
           "examples": [
-            "https://www.youtube.com/watch?v=Ejc2nAFM7pM",
-            "https://www.youtube.com/watch?v=Ejc2nAFM7pM&lc=Ugzgf38ee8WFf36PGYZ4AaABAg"
+            "https://www.snapchat.com/@fcbarcelona/spotlight/W7_EDlXWTBiXAEEniNoMPwAAYd2xvcmRrZWZlAaHQusLlAaHQur8ZAAAAAA",
+            "https://www.snapchat.com/@fcbarcelona/spotlight/W7_EDlXWTBiXAEEniNoMPwAAYYXJpZGdpcnBnAaHL__2UAaHL_-qgAAAAAA"
           ]
         }
       },
@@ -343,10 +342,10 @@
         "name": "author_and_date",
         "label": "اسم المؤلف وتاريخ النشر محفوظان",
         "status": "PASS",
-        "evidence": "author on 84/84, publish date on 84/84",
+        "evidence": "author on 32/36, publish date on 36/36",
         "detail": {
-          "authors": 84,
-          "dates": 84
+          "authors": 32,
+          "dates": 36
         }
       },
       {
@@ -354,11 +353,14 @@
         "name": "engagement",
         "label": "مقاييس التفاعل (مشاهدات/إعجابات/تعليقات/مشاركات)",
         "status": "PASS",
-        "evidence": "84/84 items carry metrics; fields seen: comments_count, likes, views",
+        "evidence": "36/36 items carry metrics; fields seen: author_followers, comments_count, likes, saves, shares, views",
         "detail": {
           "fields": [
+            "author_followers",
             "comments_count",
             "likes",
+            "saves",
+            "shares",
             "views"
           ]
         }
@@ -367,8 +369,8 @@
         "id": "C06",
         "name": "replies",
         "label": "الردود على التعليقات متاحة",
-        "status": "PARTIAL",
-        "evidence": "commentThreads reports totalReplyCount (21 sampled item(s) have replies) but fetching the reply bodies needs a second comments.list call, which is not implemented",
+        "status": "NA",
+        "evidence": "comments are returned inline; Snapchat exposes no reply threading",
         "detail": {}
       },
       {
@@ -376,10 +378,10 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 84 in 3.6s. Documented ceiling: 10,000 quota units/day. search.list costs 100 units; commentThreads.list costs 1.",
+        "evidence": "requested 4, received 36 in 3.2s. Documented ceiling: NO KEYWORD SEARCH on any available actor: collection is driven by a list of usernames the operator supplies, so Snapchat is a MONITORING sou",
         "detail": {
-          "requested": 5,
-          "received": 84
+          "requested": 4,
+          "received": 36
         }
       },
       {
@@ -387,9 +389,9 @@
         "name": "time_filter",
         "label": "التصفية الزمنية",
         "status": "PASS",
-        "evidence": "window of 180d honoured: 104 item(s) inside, 0 outside, 0 undated",
+        "evidence": "window of 180d honoured: 36 item(s) inside, 0 outside, 0 undated",
         "detail": {
-          "inside": 104,
+          "inside": 36,
           "outside": 0,
           "undated": 0
         }
@@ -399,7 +401,7 @@
         "name": "failure_behaviour",
         "label": "سلوك واضح عند الفشل",
         "status": "PASS",
-        "evidence": "empty/failed result reported explicitly as 'ok' with reason 'None' - no silent success",
+        "evidence": "empty/failed result reported explicitly as 'error' with reason 'actor=parseforge~snapchat-scraper returned 1 marker row(s) and no content: error=@zzzqqqxx' - no silent success",
         "detail": {}
       },
       {
@@ -407,36 +409,40 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.0063 for 84 item(s) = $0.075 per 1,000",
+        "evidence": "measured $0.0037 for 36 item(s) = $0.103 per 1,000",
         "detail": {
-          "spent_usd": 0.0063,
-          "usd_per_1000": 0.075
+          "spent_usd": 0.0037,
+          "usd_per_1000": 0.103
         }
       },
       {
         "id": "C11",
         "name": "saudi_reach",
         "label": "الوصول للجمهور السعودي/العربي",
-        "status": "PASS",
-        "evidence": "84/84 sampled items are Arabic (100%)",
+        "status": "FAIL",
+        "evidence": "0/36 sampled items are Arabic (0%)",
         "detail": {
-          "arabic_pct": 100
+          "arabic_pct": 0
         }
       },
       {
         "id": "C12",
         "name": "transcription",
         "label": "تفريغ نصي لما يقوله الفيديو",
-        "status": "UNTESTED",
-        "evidence": "a dedicated transcription actor exists (pintostudio~youtube-transcript-scraper) but is not wired in",
-        "detail": {}
+        "status": "PASS",
+        "evidence": "4 transcript(s); longest 13 chars; 0 contain Arabic; 4 are the speaker's own language (not machine-translated)",
+        "detail": {
+          "transcripts": 4,
+          "arabic": 0,
+          "original_voice": 4
+        }
       }
     ],
-    "sample_items": 84,
-    "elapsed_s": 3.6,
-    "cost_usd": 0.0063,
+    "sample_items": 36,
+    "elapsed_s": 3.2,
+    "cost_usd": 0.0037,
     "notes": [
-      "status=ok reason=None"
+      "status=ok reason=search_actor=parseforge~snapchat-scraper rows=4 mapped=4 | embedded_comments=32 | skipped=0"
     ]
   },
   {
@@ -449,10 +455,10 @@
         "name": "arabic_search",
         "label": "البحث بالعربية يُرجع نتائج",
         "status": "PASS",
-        "evidence": "query 'متجر_الكتروني' -> 5 items, 5 containing Arabic",
+        "evidence": "query 'متجر_الكتروني' -> 6 items, 6 containing Arabic",
         "detail": {
-          "arabic_items": 5,
-          "total": 5
+          "arabic_items": 6,
+          "total": 6
         }
       },
       {
@@ -468,11 +474,11 @@
         "name": "source_urls",
         "label": "كل عنصر له رابط مصدر",
         "status": "PASS",
-        "evidence": "5/5 items carry a source URL (100%)",
+        "evidence": "6/6 items carry a source URL (100%)",
         "detail": {
           "examples": [
-            "https://www.instagram.com/p/Dfw9l-oFIkP/",
-            "https://www.instagram.com/p/Dfw6bbuivi0/"
+            "https://www.instagram.com/p/DfxHdP7mu8I/",
+            "https://www.instagram.com/p/DfxF23zkY-Z/"
           ]
         }
       },
@@ -481,10 +487,10 @@
         "name": "author_and_date",
         "label": "اسم المؤلف وتاريخ النشر محفوظان",
         "status": "PASS",
-        "evidence": "author on 5/5, publish date on 5/5",
+        "evidence": "author on 6/6, publish date on 6/6",
         "detail": {
-          "authors": 5,
-          "dates": 5
+          "authors": 6,
+          "dates": 6
         }
       },
       {
@@ -492,7 +498,7 @@
         "name": "engagement",
         "label": "مقاييس التفاعل (مشاهدات/إعجابات/تعليقات/مشاركات)",
         "status": "PASS",
-        "evidence": "5/5 items carry metrics; fields seen: comments_count, likes",
+        "evidence": "4/6 items carry metrics; fields seen: comments_count, likes",
         "detail": {
           "fields": [
             "comments_count",
@@ -513,10 +519,10 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 5 in 47.7s. Documented ceiling: ~$1.50-2.70 / 1,000 results as of Nov 2026.",
+        "evidence": "requested 4, received 6 in 69.9s. Documented ceiling: ~$1.50-2.70 / 1,000 results as of Nov 2026.",
         "detail": {
-          "requested": 5,
-          "received": 5
+          "requested": 4,
+          "received": 6
         }
       },
       {
@@ -524,9 +530,9 @@
         "name": "time_filter",
         "label": "التصفية الزمنية",
         "status": "PASS",
-        "evidence": "window of 180d honoured: 5 item(s) inside, 0 outside, 0 undated",
+        "evidence": "window of 180d honoured: 6 item(s) inside, 0 outside, 0 undated",
         "detail": {
-          "inside": 5,
+          "inside": 6,
           "outside": 0,
           "undated": 0
         }
@@ -544,10 +550,10 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.0215 for 5 item(s) = $4.3 per 1,000",
+        "evidence": "measured $0.13 for 6 item(s) = $21.667 per 1,000",
         "detail": {
-          "spent_usd": 0.0215,
-          "usd_per_1000": 4.3
+          "spent_usd": 0.13,
+          "usd_per_1000": 21.667
         }
       },
       {
@@ -555,7 +561,7 @@
         "name": "saudi_reach",
         "label": "الوصول للجمهور السعودي/العربي",
         "status": "PASS",
-        "evidence": "5/5 sampled items are Arabic (100%)",
+        "evidence": "6/6 sampled items are Arabic (100%)",
         "detail": {
           "arabic_pct": 100
         }
@@ -564,16 +570,20 @@
         "id": "C12",
         "name": "transcription",
         "label": "تفريغ نصي لما يقوله الفيديو",
-        "status": "UNTESTED",
-        "evidence": "a dedicated transcription actor exists (steadyfetch~instagram-reel-transcript-scraper) but is not wired in",
-        "detail": {}
+        "status": "PASS",
+        "evidence": "2 transcript(s); longest 432 chars; 2 contain Arabic; 2 are the speaker's own language (not machine-translated)",
+        "detail": {
+          "transcripts": 2,
+          "arabic": 2,
+          "original_voice": 2
+        }
       }
     ],
-    "sample_items": 5,
-    "elapsed_s": 47.7,
-    "cost_usd": 0.0215,
+    "sample_items": 6,
+    "elapsed_s": 69.9,
+    "cost_usd": 0.13,
     "notes": [
-      "status=ok reason=search_actor=apify~instagram-scraper rows=5 mapped=5 | comments_actor=apify~instagram-comment-scraper rows=1 mapped=0 | skipped=1"
+      "status=ok reason=search_actor=apify~instagram-scraper rows=4 mapped=4 | comments_actor=apify~instagram-comment-scraper rows=3 mapped=0 | transcripts=2 | skipped=3"
     ]
   }
 ]
