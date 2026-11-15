@@ -40,7 +40,7 @@ from typing import Any, Callable, Optional
 from ..textutil import short_hash
 from .base import (ERROR, NETWORK_BLOCKED, NOT_AUTHORIZED, OK, PARTIAL,
                    RATE_LIMITED, CA_BUNDLE, Capability, Connector, FetchResult,
-                   RawItem, extract_engagement)
+                   RawItem, extract_engagement, within_days)
 
 DEFAULT_BASE = "https://api.apify.com/v2"
 
@@ -79,11 +79,26 @@ DEFAULT_ACTORS: dict[str, str] = {
 # a changed actor is a one-line fix.
 # Built from each actor's published input schema (GET /v2/acts/<id>/builds/default),
 # not from guesswork. Re-check the schema if an actor starts rejecting input.
+def _since_date(kw: dict) -> Optional[str]:
+    """Translate `since_days` into an ISO date. Recency matters: a complaint
+    about a product from three years ago may describe a problem that no longer
+    exists."""
+    days = kw.get("since_days")
+    if not days:
+        return None
+    import datetime as _dt
+    return (_dt.date.today() - _dt.timedelta(days=int(days))).isoformat()
+
+
 def _in_tiktok(q: str, n: int, **kw: Any) -> dict:
     # `maxProfilesPerQuery` must be >= 1 when present, so it is omitted entirely:
     # we want search results, not profile crawls.
-    return {"searchQueries": [q], "resultsPerPage": max(1, n),
-            "searchSection": "", "excludePinnedPosts": False}
+    out: dict = {"searchQueries": [q], "resultsPerPage": max(1, n),
+                 "searchSection": "", "excludePinnedPosts": False}
+    since = _since_date(kw)
+    if since:
+        out["oldestPostDateUnified"] = since
+    return out
 
 
 def _in_instagram(q: str, n: int, **kw: Any) -> dict:
@@ -99,14 +114,21 @@ def _in_instagram(q: str, n: int, **kw: Any) -> dict:
         else:
             tag = quote(q.lstrip("#").replace(" ", ""), safe="")
             urls = [f"https://www.instagram.com/explore/tags/{tag}"]
-    return {"directUrls": urls, "resultsType": "posts",
-            "resultsLimit": max(1, n), "addParentData": False}
+    out: dict = {"directUrls": urls, "resultsType": "posts",
+                 "resultsLimit": max(1, n), "addParentData": False}
+    since = _since_date(kw)
+    if since:
+        out["onlyPostsNewerThan"] = since
+    return out
 
 
 def _in_x(q: str, n: int, **kw: Any) -> dict:
-    out = {"searchTerms": [q], "maxItems": max(1, n), "sort": "Latest"}
+    out: dict = {"searchTerms": [q], "maxItems": max(1, n), "sort": "Latest"}
     if kw.get("lang"):
         out["tweetLanguage"] = kw["lang"]
+    since = _since_date(kw)
+    if since:
+        out["start"] = since
     return out
 
 
@@ -209,6 +231,46 @@ def is_sentinel_row(row: Any) -> Optional[str]:
     return None
 
 
+def _transcript_meta(row: dict) -> dict:
+    """What the video actually SAYS, where the provider exposes it.
+
+    Three shapes exist in the wild:
+      * an inline transcript string          (Snapchat)
+      * an AI-written description/summary    (TikTok, paid add-on)
+      * subtitle tracks behind a CDN link    (TikTok, incl. ara-SA)
+    The caption alone is usually hashtags, so this is what makes a video's
+    content readable at all.
+    """
+    out: dict = {}
+    text = (row.get("transcript") or row.get("transcription")
+            or row.get("captions") or row.get("subtitles"))
+    if isinstance(text, str) and text.strip():
+        out["transcript"] = text.strip()
+
+    vm = row.get("videoMeta") if isinstance(row.get("videoMeta"), dict) else {}
+    for key in ("aiVideoSummary", "aiVideoDescription"):
+        v = vm.get(key) or row.get(key)
+        if isinstance(v, str) and v.strip():
+            out.setdefault("transcript", v.strip())
+            out["transcript_source"] = key
+            break
+
+    links = vm.get("subtitleLinks") or row.get("subtitleLinks") or []
+    if isinstance(links, list) and links:
+        langs, urls = [], {}
+        for s in links:
+            if isinstance(s, dict) and s.get("language"):
+                langs.append(s["language"])
+                if s.get("downloadLink"):
+                    urls[s["language"]] = s["downloadLink"]
+        if langs:
+            out["subtitle_languages"] = langs
+            out["subtitle_links"] = urls
+    if vm.get("transcriptionLink") or row.get("transcriptionLink"):
+        out["transcription_link"] = vm.get("transcriptionLink") or row.get("transcriptionLink")
+    return out
+
+
 def map_item(row: dict, platform: str) -> Optional[RawItem]:
     """Map one provider row to a RawItem. Returns None when there is no text."""
     if not isinstance(row, dict):
@@ -230,7 +292,8 @@ def map_item(row: dict, platform: str) -> Optional[RawItem]:
         extraction_method="read_full",
         raw_meta={"provider": "apify", "platform": platform,
                   "hashtags": row.get("hashtags"),
-                  "language": row.get("language") or row.get("textLanguage")},
+                  "language": row.get("language") or row.get("textLanguage"),
+                  **_transcript_meta(row)},
         engagement=extract_engagement(row),
     )
 
@@ -441,6 +504,24 @@ class ProviderConnector(Connector):
         if sentinels:
             partial = True
             notes.append(f"marker_rows={len(sentinels)} ({sentinels[0][:60]})")
+
+        # Client-side recency guard. Server-side filters are applied above where
+        # the actor supports one; this enforces the window everywhere, including
+        # platforms that expose no date filter at all (Snapchat).
+        since_days = kw.get("since_days")
+        if since_days:
+            kept, dropped, undated = [], 0, 0
+            for it in items:
+                verdict = within_days(it.published_at, int(since_days))
+                if verdict is False:
+                    dropped += 1
+                    continue
+                if verdict is None:
+                    undated += 1          # keep, but say so
+                kept.append(it)
+            items = kept
+            notes.append(f"recency<={since_days}d: dropped={dropped} undated_kept={undated}")
+
         notes.append(f"skipped={skipped}")
         return FetchResult(items=items,
                            access_status=PARTIAL if (partial and items) else OK,

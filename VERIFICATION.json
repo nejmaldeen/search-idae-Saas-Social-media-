@@ -17,7 +17,7 @@
         "name": "comments",
         "label": "جلب تعليقات المستخدمين لا الأوصاف فقط",
         "status": "PASS",
-        "evidence": "46 comment item(s) retrieved",
+        "evidence": "39 comment item(s) retrieved",
         "detail": {
           "examples": [
             "Me and pedri has birthday sam day 25 november",
@@ -30,7 +30,7 @@
         "name": "source_urls",
         "label": "كل عنصر له رابط مصدر",
         "status": "PASS",
-        "evidence": "51/51 items carry a source URL (100%)",
+        "evidence": "44/44 items carry a source URL (100%)",
         "detail": {
           "examples": [
             "https://www.snapchat.com/@fcbarcelona/spotlight/W7_EDlXWTBiXAEEniNoMPwAAYd2xvcmRrZWZlAaHQusLlAaHQur8ZAAAAAA",
@@ -43,10 +43,10 @@
         "name": "author_and_date",
         "label": "اسم المؤلف وتاريخ النشر محفوظان",
         "status": "PASS",
-        "evidence": "author on 46/51, publish date on 51/51",
+        "evidence": "author on 39/44, publish date on 44/44",
         "detail": {
-          "authors": 46,
-          "dates": 51
+          "authors": 39,
+          "dates": 44
         }
       },
       {
@@ -54,7 +54,7 @@
         "name": "engagement",
         "label": "مقاييس التفاعل (مشاهدات/إعجابات/تعليقات/مشاركات)",
         "status": "PASS",
-        "evidence": "51/51 items carry metrics; fields seen: author_followers, comments_count, likes, saves, shares, views",
+        "evidence": "44/44 items carry metrics; fields seen: author_followers, comments_count, likes, saves, shares, views",
         "detail": {
           "fields": [
             "author_followers",
@@ -79,19 +79,23 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 51 in 2.5s. Documented ceiling: NO KEYWORD SEARCH on any available actor: collection is driven by a list of usernames the operator supplies, so Snapchat is a MONITORING sou",
+        "evidence": "requested 5, received 44 in 2.4s. Documented ceiling: NO KEYWORD SEARCH on any available actor: collection is driven by a list of usernames the operator supplies, so Snapchat is a MONITORING sou",
         "detail": {
           "requested": 5,
-          "received": 51
+          "received": 44
         }
       },
       {
         "id": "C08",
         "name": "time_filter",
         "label": "التصفية الزمنية",
-        "status": "PARTIAL",
-        "evidence": "no date filter exposed; filter client-side on uploadedAt",
-        "detail": {}
+        "status": "PASS",
+        "evidence": "window of 180d honoured: 44 item(s) inside, 0 outside, 0 undated",
+        "detail": {
+          "inside": 44,
+          "outside": 0,
+          "undated": 0
+        }
       },
       {
         "id": "C09",
@@ -106,10 +110,10 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.0107 for 51 item(s) = $0.21 per 1,000",
+        "evidence": "measured $0.0 for 44 item(s) = $0.0 per 1,000",
         "detail": {
-          "spent_usd": 0.0107,
-          "usd_per_1000": 0.21
+          "spent_usd": 0.0,
+          "usd_per_1000": 0.0
         }
       },
       {
@@ -117,17 +121,27 @@
         "name": "saudi_reach",
         "label": "الوصول للجمهور السعودي/العربي",
         "status": "FAIL",
-        "evidence": "0/51 sampled items are Arabic (0%)",
+        "evidence": "0/44 sampled items are Arabic (0%)",
         "detail": {
           "arabic_pct": 0
         }
+      },
+      {
+        "id": "C12",
+        "name": "transcription",
+        "label": "تفريغ نصي لما يقوله الفيديو",
+        "status": "PASS",
+        "evidence": "5/44 item(s) carry a transcript (longest 13 chars)",
+        "detail": {
+          "items_with_transcript": 5
+        }
       }
     ],
-    "sample_items": 51,
-    "elapsed_s": 2.5,
-    "cost_usd": 0.0107,
+    "sample_items": 44,
+    "elapsed_s": 2.4,
+    "cost_usd": 0.0,
     "notes": [
-      "status=ok reason=search_actor=parseforge~snapchat-scraper rows=5 mapped=5 | embedded_comments=46 | skipped=0"
+      "status=ok reason=search_actor=parseforge~snapchat-scraper rows=5 mapped=5 | embedded_comments=39 | skipped=0"
     ]
   },
   {
@@ -140,10 +154,10 @@
         "name": "arabic_search",
         "label": "البحث بالعربية يُرجع نتائج",
         "status": "PASS",
-        "evidence": "query 'مشاكل متجر سلة' -> 26 items, 26 containing Arabic",
+        "evidence": "query 'مشاكل متجر سلة' -> 22 items, 22 containing Arabic",
         "detail": {
-          "arabic_items": 26,
-          "total": 26
+          "arabic_items": 22,
+          "total": 22
         }
       },
       {
@@ -151,10 +165,10 @@
         "name": "comments",
         "label": "جلب تعليقات المستخدمين لا الأوصاف فقط",
         "status": "PASS",
-        "evidence": "21 comment item(s) retrieved",
+        "evidence": "17 comment item(s) retrieved",
         "detail": {
           "examples": [
-            "ما هو البديل؟",
+            "طيب كم لازم تكون ؟",
             "انا ماليش في المتاجر بس السنة دي كان معاي مشروع في شوبيفاي وصراحة حاجة"
           ]
         }
@@ -164,11 +178,11 @@
         "name": "source_urls",
         "label": "كل عنصر له رابط مصدر",
         "status": "PASS",
-        "evidence": "26/26 items carry a source URL (100%)",
+        "evidence": "22/22 items carry a source URL (100%)",
         "detail": {
           "examples": [
             "https://www.tiktok.com/@soladig2/video/7606833951134567701",
-            "https://www.tiktok.com/@itechapp/video/7612390983015091477"
+            "https://www.tiktok.com/@sociall_team/video/7551088905941028152"
           ]
         }
       },
@@ -177,10 +191,10 @@
         "name": "author_and_date",
         "label": "اسم المؤلف وتاريخ النشر محفوظان",
         "status": "PASS",
-        "evidence": "author on 26/26, publish date on 26/26",
+        "evidence": "author on 22/22, publish date on 22/22",
         "detail": {
-          "authors": 26,
-          "dates": 26
+          "authors": 22,
+          "dates": 22
         }
       },
       {
@@ -188,7 +202,7 @@
         "name": "engagement",
         "label": "مقاييس التفاعل (مشاهدات/إعجابات/تعليقات/مشاركات)",
         "status": "PASS",
-        "evidence": "26/26 items carry metrics; fields seen: comments_count, likes, saves, shares, views",
+        "evidence": "22/22 items carry metrics; fields seen: comments_count, likes, saves, shares, views",
         "detail": {
           "fields": [
             "comments_count",
@@ -214,10 +228,10 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 26 in 59.2s. Documented ceiling: Billed per result by the provider (~$1.70-3.70 / 1,000 as of Nov 2026).",
+        "evidence": "requested 5, received 22 in 68.5s. Documented ceiling: Billed per result by the provider (~$1.70-3.70 / 1,000 as of Nov 2026).",
         "detail": {
           "requested": 5,
-          "received": 26
+          "received": 22
         }
       },
       {
@@ -225,8 +239,12 @@
         "name": "time_filter",
         "label": "التصفية الزمنية",
         "status": "PASS",
-        "evidence": "oldestPostDateUnified / newestPostDate on the search actor",
-        "detail": {}
+        "evidence": "window of 180d honoured: 9 item(s) inside, 0 outside, 0 undated",
+        "detail": {
+          "inside": 9,
+          "outside": 0,
+          "undated": 0
+        }
       },
       {
         "id": "C09",
@@ -241,10 +259,10 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.0714 for 26 item(s) = $2.746 per 1,000",
+        "evidence": "measured $0.1234 for 22 item(s) = $5.609 per 1,000",
         "detail": {
-          "spent_usd": 0.0714,
-          "usd_per_1000": 2.746
+          "spent_usd": 0.1234,
+          "usd_per_1000": 5.609
         }
       },
       {
@@ -252,17 +270,30 @@
         "name": "saudi_reach",
         "label": "الوصول للجمهور السعودي/العربي",
         "status": "PASS",
-        "evidence": "26/26 sampled items are Arabic (100%)",
+        "evidence": "22/22 sampled items are Arabic (100%)",
         "detail": {
           "arabic_pct": 100
         }
+      },
+      {
+        "id": "C12",
+        "name": "transcription",
+        "label": "تفريغ نصي لما يقوله الفيديو",
+        "status": "PARTIAL",
+        "evidence": "subtitle tracks are published (ara-SA, eng-US; Arabic available) but the subtitle CDN host is not reachable from this environment, so the text cannot be downloaded yet",
+        "detail": {
+          "subtitle_languages": [
+            "ara-SA",
+            "eng-US"
+          ]
+        }
       }
     ],
-    "sample_items": 26,
-    "elapsed_s": 59.2,
-    "cost_usd": 0.0714,
+    "sample_items": 22,
+    "elapsed_s": 68.5,
+    "cost_usd": 0.1234,
     "notes": [
-      "status=ok reason=search_actor=clockworks~tiktok-scraper rows=5 mapped=5 | comments_actor=clockworks~tiktok-comments-scraper rows=21 mapped=21 | skipped=0"
+      "status=ok reason=search_actor=clockworks~tiktok-scraper rows=5 mapped=5 | comments_actor=clockworks~tiktok-comments-scraper rows=17 mapped=17 | skipped=0"
     ]
   },
   {
@@ -289,8 +320,8 @@
         "evidence": "79 comment item(s) retrieved",
         "detail": {
           "examples": [
-            "حفظك الله تعلمت منك كثير استاذ حسن",
-            "أنت تقدم ما لا يريد أن يسمعه المبتدئ \nلكن حقيقة واحدة مؤلمة أفضل من 10"
+            "أنت تقدم ما لا يريد أن يسمعه المبتدئ \nلكن حقيقة واحدة مؤلمة أفضل من 10",
+            "حفظك الله تعلمت منك كثير استاذ حسن"
           ]
         }
       },
@@ -303,7 +334,7 @@
         "detail": {
           "examples": [
             "https://www.youtube.com/watch?v=Ejc2nAFM7pM",
-            "https://www.youtube.com/watch?v=Ejc2nAFM7pM&lc=UgwcL2d4uaP3jc_9RjF4AaABAg"
+            "https://www.youtube.com/watch?v=Ejc2nAFM7pM&lc=Ugzgf38ee8WFf36PGYZ4AaABAg"
           ]
         }
       },
@@ -337,7 +368,7 @@
         "name": "replies",
         "label": "الردود على التعليقات متاحة",
         "status": "PARTIAL",
-        "evidence": "commentThreads reports totalReplyCount (22 sampled item(s) have replies) but fetching the reply bodies needs a second comments.list call, which is not implemented",
+        "evidence": "commentThreads reports totalReplyCount (21 sampled item(s) have replies) but fetching the reply bodies needs a second comments.list call, which is not implemented",
         "detail": {}
       },
       {
@@ -345,7 +376,7 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 84 in 3.2s. Documented ceiling: 10,000 quota units/day. search.list costs 100 units; commentThreads.list costs 1.",
+        "evidence": "requested 5, received 84 in 3.6s. Documented ceiling: 10,000 quota units/day. search.list costs 100 units; commentThreads.list costs 1.",
         "detail": {
           "requested": 5,
           "received": 84
@@ -356,8 +387,12 @@
         "name": "time_filter",
         "label": "التصفية الزمنية",
         "status": "PASS",
-        "evidence": "publishedAfter / publishedBefore on search.list",
-        "detail": {}
+        "evidence": "window of 180d honoured: 104 item(s) inside, 0 outside, 0 undated",
+        "detail": {
+          "inside": 104,
+          "outside": 0,
+          "undated": 0
+        }
       },
       {
         "id": "C09",
@@ -372,10 +407,10 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.0037 for 84 item(s) = $0.044 per 1,000",
+        "evidence": "measured $0.0063 for 84 item(s) = $0.075 per 1,000",
         "detail": {
-          "spent_usd": 0.0037,
-          "usd_per_1000": 0.044
+          "spent_usd": 0.0063,
+          "usd_per_1000": 0.075
         }
       },
       {
@@ -387,11 +422,19 @@
         "detail": {
           "arabic_pct": 100
         }
+      },
+      {
+        "id": "C12",
+        "name": "transcription",
+        "label": "تفريغ نصي لما يقوله الفيديو",
+        "status": "UNTESTED",
+        "evidence": "a dedicated transcription actor exists (pintostudio~youtube-transcript-scraper) but is not wired in",
+        "detail": {}
       }
     ],
     "sample_items": 84,
-    "elapsed_s": 3.2,
-    "cost_usd": 0.0037,
+    "elapsed_s": 3.6,
+    "cost_usd": 0.0063,
     "notes": [
       "status=ok reason=None"
     ]
@@ -428,8 +471,8 @@
         "evidence": "5/5 items carry a source URL (100%)",
         "detail": {
           "examples": [
-            "https://www.instagram.com/p/DfwkkQAG3Dv/",
-            "https://www.instagram.com/p/DfwhDzvjLUq/"
+            "https://www.instagram.com/p/Dfw9l-oFIkP/",
+            "https://www.instagram.com/p/Dfw6bbuivi0/"
           ]
         }
       },
@@ -470,7 +513,7 @@
         "name": "depth_and_cap",
         "label": "العمق والسقف لكل استعلام",
         "status": "PASS",
-        "evidence": "requested 5, received 5 in 19.4s. Documented ceiling: ~$1.50-2.70 / 1,000 results as of Nov 2026.",
+        "evidence": "requested 5, received 5 in 47.7s. Documented ceiling: ~$1.50-2.70 / 1,000 results as of Nov 2026.",
         "detail": {
           "requested": 5,
           "received": 5
@@ -481,8 +524,12 @@
         "name": "time_filter",
         "label": "التصفية الزمنية",
         "status": "PASS",
-        "evidence": "onlyPostsNewerThan on the scraper",
-        "detail": {}
+        "evidence": "window of 180d honoured: 5 item(s) inside, 0 outside, 0 undated",
+        "detail": {
+          "inside": 5,
+          "outside": 0,
+          "undated": 0
+        }
       },
       {
         "id": "C09",
@@ -497,10 +544,10 @@
         "name": "measured_cost",
         "label": "التكلفة مقاسة فعلياً",
         "status": "PASS",
-        "evidence": "measured $0.0267 for 5 item(s) = $5.34 per 1,000",
+        "evidence": "measured $0.0215 for 5 item(s) = $4.3 per 1,000",
         "detail": {
-          "spent_usd": 0.0267,
-          "usd_per_1000": 5.34
+          "spent_usd": 0.0215,
+          "usd_per_1000": 4.3
         }
       },
       {
@@ -512,120 +559,21 @@
         "detail": {
           "arabic_pct": 100
         }
+      },
+      {
+        "id": "C12",
+        "name": "transcription",
+        "label": "تفريغ نصي لما يقوله الفيديو",
+        "status": "UNTESTED",
+        "evidence": "a dedicated transcription actor exists (steadyfetch~instagram-reel-transcript-scraper) but is not wired in",
+        "detail": {}
       }
     ],
     "sample_items": 5,
-    "elapsed_s": 19.4,
-    "cost_usd": 0.0267,
+    "elapsed_s": 47.7,
+    "cost_usd": 0.0215,
     "notes": [
-      "status=ok reason=search_actor=apify~instagram-scraper rows=5 mapped=5 | comments_actor=apify~instagram-comment-scraper rows=3 mapped=0 | skipped=3"
-    ]
-  },
-  {
-    "platform": "x",
-    "usable": true,
-    "blocked_reason": "",
-    "checks": [
-      {
-        "id": "C01",
-        "name": "arabic_search",
-        "label": "البحث بالعربية يُرجع نتائج",
-        "status": "FAIL",
-        "evidence": "search failed: error - actor=apidojo~tweet-scraper returned 10 marker row(s) and no content: noResults=True. The actor reached no results for this query (upstream block, quota, or gen",
-        "detail": {}
-      },
-      {
-        "id": "C02",
-        "name": "comments",
-        "label": "جلب تعليقات المستخدمين لا الأوصاف فقط",
-        "status": "UNTESTED",
-        "evidence": "no items to inspect",
-        "detail": {}
-      },
-      {
-        "id": "C03",
-        "name": "source_urls",
-        "label": "كل عنصر له رابط مصدر",
-        "status": "UNTESTED",
-        "evidence": "no items to inspect",
-        "detail": {}
-      },
-      {
-        "id": "C04",
-        "name": "author_and_date",
-        "label": "اسم المؤلف وتاريخ النشر محفوظان",
-        "status": "UNTESTED",
-        "evidence": "no items to inspect",
-        "detail": {}
-      },
-      {
-        "id": "C05",
-        "name": "engagement",
-        "label": "مقاييس التفاعل (مشاهدات/إعجابات/تعليقات/مشاركات)",
-        "status": "UNTESTED",
-        "evidence": "no items to inspect",
-        "detail": {}
-      },
-      {
-        "id": "C06",
-        "name": "replies",
-        "label": "الردود على التعليقات متاحة",
-        "status": "PARTIAL",
-        "evidence": "the actor accepts conversationIds, so a thread can be pulled, but threading is not wired into the connector",
-        "detail": {}
-      },
-      {
-        "id": "C07",
-        "name": "depth_and_cap",
-        "label": "العمق والسقف لكل استعلام",
-        "status": "UNTESTED",
-        "evidence": "requested 5, received 0 in 2.4s. Documented ceiling: Provider per-result billing. Official X alternative: pay-per-use, ~$0.005 per post read, no free tier (Nov 2026).",
-        "detail": {
-          "requested": 5,
-          "received": 0
-        }
-      },
-      {
-        "id": "C08",
-        "name": "time_filter",
-        "label": "التصفية الزمنية",
-        "status": "PASS",
-        "evidence": "actor supports since/until via search operators",
-        "detail": {}
-      },
-      {
-        "id": "C09",
-        "name": "failure_behaviour",
-        "label": "سلوك واضح عند الفشل",
-        "status": "PASS",
-        "evidence": "empty/failed result reported explicitly as 'error' with reason 'actor=apidojo~tweet-scraper returned 10 marker row(s) and no content: noResults=True. The ' - no silent success",
-        "detail": {}
-      },
-      {
-        "id": "C10",
-        "name": "measured_cost",
-        "label": "التكلفة مقاسة فعلياً",
-        "status": "PARTIAL",
-        "evidence": "measured $0.0 for 0 item(s)",
-        "detail": {
-          "spent_usd": 0.0,
-          "usd_per_1000": null
-        }
-      },
-      {
-        "id": "C11",
-        "name": "saudi_reach",
-        "label": "الوصول للجمهور السعودي/العربي",
-        "status": "UNTESTED",
-        "evidence": "no items to inspect",
-        "detail": {}
-      }
-    ],
-    "sample_items": 0,
-    "elapsed_s": 2.4,
-    "cost_usd": 0.0,
-    "notes": [
-      "status=error reason=actor=apidojo~tweet-scraper returned 10 marker row(s) and no content: noResults=True. The actor reached no results for this query (upstream block, quota, or genuinely nothing matching)."
+      "status=ok reason=search_actor=apify~instagram-scraper rows=5 mapped=5 | comments_actor=apify~instagram-comment-scraper rows=1 mapped=0 | skipped=1"
     ]
   }
 ]

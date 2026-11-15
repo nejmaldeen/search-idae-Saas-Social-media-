@@ -31,7 +31,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Optional
 
 from .connectors import get
-from .connectors.base import FetchResult, RawItem
+from .connectors.base import FetchResult, RawItem, within_days
 from .textutil import detect_lang
 
 PASS, FAIL, PARTIAL, NA, UNTESTED = "PASS", "FAIL", "PARTIAL", "NA", "UNTESTED"
@@ -48,7 +48,12 @@ CRITERIA = [
     ("C09", "failure_behaviour", "سلوك واضح عند الفشل"),
     ("C10", "measured_cost", "التكلفة مقاسة فعلياً"),
     ("C11", "saudi_reach", "الوصول للجمهور السعودي/العربي"),
+    ("C12", "transcription", "تفريغ نصي لما يقوله الفيديو"),
 ]
+
+# The research only cares about recent complaints: an old one may describe a
+# problem that has since been fixed.
+DEFAULT_WINDOW_DAYS = 180
 
 # Arabic probe queries per platform, chosen to match how the audience talks.
 ARABIC_PROBE = {
@@ -60,6 +65,12 @@ ARABIC_PROBE = {
 }
 
 ARABIC_RE = re.compile(r"[؀-ۿ]")
+
+# Dedicated transcription actors, for platforms whose own payload carries none.
+TRANSCRIPT_ACTORS = {
+    "youtube": "pintostudio~youtube-transcript-scraper",
+    "instagram": "steadyfetch~instagram-reel-transcript-scraper",
+}
 
 
 @dataclass
@@ -110,7 +121,8 @@ def verify_platform(platform: str, limit: int = 5,
                     usernames: Optional[list[str]] = None,
                     comments_per_post: int = 15,
                     probe_query: Optional[str] = None,
-                    measure_spend: bool = True) -> PlatformReport:
+                    measure_spend: bool = True,
+                    window_days: int = DEFAULT_WINDOW_DAYS) -> PlatformReport:
     """Run the eleven checks against one platform with a small live sample."""
     spend_before = provider_spend() if measure_spend else None
     conn = get(platform)
@@ -253,20 +265,33 @@ def verify_platform(platform: str, limit: int = 5,
           f"Documented ceiling: {cap.limits[:140]}",
           requested=limit, received=len(items))
 
-    # ---- C08 time filter ---------------------------------------------------
+    # ---- C08 time filter: actually exercised, not merely documented --------
     c = _by_name(rep.checks, "time_filter")
-    time_filter_support = {
-        "tiktok": "oldestPostDateUnified / newestPostDate on the search actor",
-        "youtube": "publishedAfter / publishedBefore on search.list",
-        "x": "actor supports since/until via search operators",
-        "instagram": "onlyPostsNewerThan on the scraper",
-        "snapchat": "no date filter exposed; filter client-side on uploadedAt",
-    }
-    if platform in time_filter_support:
-        supported = platform != "snapchat"
-        c.set(PASS if supported else PARTIAL, time_filter_support[platform])
+    if items:
+        wkw = dict(kw)
+        wkw["since_days"] = window_days
+        wres = conn.search(query, limit=limit, **wkw)
+        dated = [(i, within_days(i.published_at, window_days)) for i in wres.items]
+        inside = sum(1 for _, v in dated if v is True)
+        outside = sum(1 for _, v in dated if v is False)
+        unknown = sum(1 for _, v in dated if v is None)
+        if not wres.ok:
+            c.set(FAIL, f"a windowed request failed: {wres.access_status} "
+                        f"{str(wres.reason)[:110]}")
+        elif outside == 0 and inside > 0:
+            c.set(PASS, f"window of {window_days}d honoured: {inside} item(s) "
+                        f"inside, 0 outside, {unknown} undated",
+                  inside=inside, outside=outside, undated=unknown)
+        elif inside + unknown == 0:
+            c.set(FAIL, f"windowed request returned no usable items "
+                        f"({len(wres.items)} raw)")
+        else:
+            c.set(PARTIAL, f"{inside} inside / {outside} outside / {unknown} "
+                           f"undated after a {window_days}d window - filtering is "
+                           f"not fully enforced upstream",
+                  inside=inside, outside=outside, undated=unknown)
     else:
-        c.set(UNTESTED, "not assessed")
+        c.set(UNTESTED, "no items to inspect")
 
     # ---- C09 failure behaviour --------------------------------------------
     c = _by_name(rep.checks, "failure_behaviour")
@@ -290,6 +315,30 @@ def verify_platform(platform: str, limit: int = 5,
               arabic_pct=pct)
     else:
         c.set(UNTESTED, "no items to inspect")
+
+    # ---- C12 transcription: can we read what the video SAYS? --------------
+    c = _by_name(rep.checks, "transcription")
+    have = [i for i in items if (i.raw_meta or {}).get("transcript")]
+    sub_langs: set[str] = set()
+    for i in items:
+        for s in ((i.raw_meta or {}).get("subtitle_languages") or []):
+            sub_langs.add(str(s))
+    if have:
+        longest = max(len(str((i.raw_meta or {}).get("transcript", ""))) for i in have)
+        c.set(PASS, f"{len(have)}/{len(items)} item(s) carry a transcript "
+                    f"(longest {longest} chars)", items_with_transcript=len(have))
+    elif sub_langs:
+        arabic = [l for l in sub_langs if l.lower().startswith("ar")]
+        c.set(PARTIAL,
+              f"subtitle tracks are published ({', '.join(sorted(sub_langs))}"
+              f"{'; Arabic available' if arabic else ''}) but the subtitle CDN host "
+              f"is not reachable from this environment, so the text cannot be "
+              f"downloaded yet", subtitle_languages=sorted(sub_langs))
+    elif platform in TRANSCRIPT_ACTORS:
+        c.set(UNTESTED, f"a dedicated transcription actor exists "
+                        f"({TRANSCRIPT_ACTORS[platform]}) but is not wired in")
+    else:
+        c.set(FAIL, "no transcript and no subtitle track on any sampled item")
 
     # ---- C10 measured cost (per platform, from real provider billing) ------
     c = _by_name(rep.checks, "measured_cost")

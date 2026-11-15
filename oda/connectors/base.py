@@ -58,6 +58,47 @@ def _as_int(v: Any) -> Optional[int]:
     return n if n >= 0 else None
 
 
+def parse_published(value: Any) -> Optional[float]:
+    """Best-effort epoch seconds from the many date shapes providers return:
+    ISO strings, unix seconds, unix milliseconds."""
+    if value is None:
+        return None
+    import datetime as _dt
+    s = str(value).strip()
+    if not s:
+        return None
+    if s.isdigit():
+        n = int(s)
+        if n > 10_000_000_000:        # milliseconds
+            n //= 1000
+        return float(n) if 0 < n < 4_000_000_000 else None
+    txt = s.replace("Z", "+00:00")
+    for cut in (txt, txt[:19], txt[:10]):
+        try:
+            d = _dt.datetime.fromisoformat(cut)
+            if d.tzinfo is None:
+                d = d.replace(tzinfo=_dt.timezone.utc)
+            return d.timestamp()
+        except ValueError:
+            continue
+    return None
+
+
+def within_days(value: Any, days: Optional[int]) -> Optional[bool]:
+    """True/False if the date is inside the window; None when unknown.
+
+    None is deliberate: an item with no date must not be silently dropped, nor
+    silently kept. The caller decides.
+    """
+    if not days:
+        return True
+    ts = parse_published(value)
+    if ts is None:
+        return None
+    import time as _t
+    return (_t.time() - ts) <= days * 86400
+
+
 def extract_engagement(row: dict) -> dict:
     """Pull engagement metrics out of a provider row, whatever it calls them.
 

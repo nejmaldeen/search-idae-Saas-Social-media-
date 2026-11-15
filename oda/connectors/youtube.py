@@ -63,6 +63,13 @@ class YouTubeConnector(Connector):
             params["regionCode"] = region
         if lang:
             params["relevanceLanguage"] = lang
+        # Recency: a complaint from three years ago may describe a problem that
+        # has since been fixed. search.list filters server-side.
+        since_days = kw.get("since_days")
+        if since_days:
+            import datetime as _dt
+            after = _dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(days=int(since_days))
+            params["publishedAfter"] = after.strftime("%Y-%m-%dT%H:%M:%SZ")
         code, err, body = http_get(SEARCH, params=params)
         if err:
             return FetchResult(access_status=NETWORK_BLOCKED, reason=err, endpoint=SEARCH)

@@ -98,7 +98,8 @@ def cmd_verify_integration(args):
         print(f"→ verifying {name} ...", flush=True)
         rep = V.verify_platform(name, limit=args.limit, usernames=usernames or None,
                                 comments_per_post=args.comments,
-                                probe_query=args.query)
+                                probe_query=args.query,
+                                window_days=args.window_days)
         reports.append(rep)
         total_items += rep.sample_items
         print(f"  {name}: {rep.score()} ({rep.sample_items} items)", flush=True)
@@ -220,6 +221,8 @@ def main():
     s.add_argument("--limit", type=int, default=5, help="sample size per platform")
     s.add_argument("--comments", type=int, default=15, help="comments per post")
     s.add_argument("--query", default=None, help="override the Arabic probe query")
+    s.add_argument("--window-days", type=int, default=180,
+                   help="recency window to test (default 180 = ~6 months)")
     s.add_argument("--out", default="VERIFICATION.md")
     s.set_defaults(func=cmd_verify_integration)
 
