@@ -1,0 +1,10 @@
+# Core runtime
+requests>=2.31
+streamlit>=1.40
+
+# Testing
+pytest>=8.0
+
+# Standard library only otherwise: sqlite3, re, json, csv, hashlib, math.
+# No scraping libraries, no headless browsers, no LLM SDK is required:
+# the default extractor is deterministic and rule-based.
