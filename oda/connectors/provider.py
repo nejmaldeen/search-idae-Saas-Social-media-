@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from typing import Any, Callable, Optional
 
 from ..textutil import short_hash
@@ -68,7 +69,14 @@ COMMENT_INPUTS: dict[str, Callable[..., dict]] = {
 DEFAULT_ACTORS: dict[str, str] = {
     "tiktok": "clockworks~tiktok-scraper",
     "instagram": "apify~instagram-scraper",
-    "x": "apidojo~tweet-scraper",
+    # X actor history, from run logs rather than guesswork:
+    #   apidojo~tweet-scraper        -> {"noResults": true} once its free
+    #                                   monthly run limit was reached
+    #   apidojo~twitter-scraper-lite -> {"demo": true} for the same reason
+    # Both failures looked like "X is blocking us" but were billing caps.
+    # kaitoeasyapi bills per result instead of per run, so it does not hit a
+    # monthly run ceiling. Override with ODA_ACTOR_X if it degrades too.
+    "x": "kaitoeasyapi~twitter-x-data-tweet-scraper-pay-per-result-cheapest",
     "reddit": "fatihtahta~reddit-scraper-search-fast",
     "snapchat": "parseforge~snapchat-scraper",
     "g2": "apify~web-scraper",
@@ -214,16 +222,47 @@ def _first(d: dict, keys: tuple[str, ...]) -> Optional[str]:
 # Some actors signal "nothing found" with sentinel rows rather than an empty
 # list or an error. Treating those as ordinary unmappable rows would report a
 # silent success, which is exactly what criterion C09 forbids.
-_SENTINEL_KEYS = ("noResults", "no_results", "error", "errorMessage", "warning")
+_SENTINEL_KEYS = (
+    "noResults", "no_results", "error", "errorMessage", "warning",
+    # When an actor's free monthly run limit is exhausted it does not fail: it
+    # returns placeholder rows like {"demo": true}. Mapping those away quietly
+    # reported "ok, 0 items" and was misread as "X is blocking us" when the
+    # real cause was a billing cap (verified from the run log, 2026-11-16).
+    "demo", "isDemo", "limitExceeded", "quotaExceeded", "subscriptionRequired",
+)
+
+
+# Some actors inject their own advertising into the dataset, shaped like real
+# content. One X actor returned 10 such rows out of 15. Left in, they become
+# "market evidence", so they are dropped and counted.
+_VENDOR_NOTICE = re.compile(
+    r"\bfrom\s+\w+api\b|our\s+api\s+pricing|apify\s+(?:actor|platform)\b|"
+    r"subscribe\s+to\s+a\s+paid\s+plan|upgrade\s+your\s+plan|"
+    r"this\s+is\s+a\s+(?:demo|sample)\s+(?:row|item|result)",
+    re.IGNORECASE)
 
 
 def is_sentinel_row(row: Any) -> Optional[str]:
-    """Return a reason string when a row is a 'nothing found' / error marker."""
+    """Return a reason string when a row is a marker, an error, or vendor copy."""
     if not isinstance(row, dict):
         return None
-    # A real content row has text; a sentinel is a bare flag.
-    if any(k in row for k in _TEXT_KEYS):
-        return None
+
+    # Placeholder ids: real platform ids are never -1.
+    if str(row.get("id", "")).strip() in ("-1", "0"):
+        return f"placeholder id={row.get('id')}"
+
+    text = ""
+    for k in _TEXT_KEYS:
+        v = row.get(k)
+        if isinstance(v, str) and v.strip():
+            text = v
+            break
+    if text:
+        m = _VENDOR_NOTICE.search(text)
+        if m:
+            return f"vendor notice in content: {m.group(0)[:40]!r}"
+        return None      # genuine content row
+
     for k in _SENTINEL_KEYS:
         if k in row and row[k]:
             v = row[k]
@@ -280,7 +319,16 @@ def map_item(row: dict, platform: str) -> Optional[RawItem]:
         return None
     url = _first(row, _URL_KEYS)
     ext = _first(row, _ID_KEYS) or short_hash(text + (url or ""), 20)
-    kind = "comment" if any(k in row for k in ("comment", "commentUrl", "replyCount")) else "post"
+    # A reply COUNT does not make something a reply - every tweet has one.
+    # Classify by what the row says about itself, then by comment-only fields.
+    if row.get("isReply") is True or row.get("inReplyToId"):
+        kind = "comment"
+    elif any(k in row for k in ("commentUrl", "repliesToId", "postUrl")):
+        kind = "comment"
+    elif "comment" in row:
+        kind = "comment"
+    else:
+        kind = "post"
     return RawItem(
         external_id=f"{platform}:{ext}",
         text=text.strip(),

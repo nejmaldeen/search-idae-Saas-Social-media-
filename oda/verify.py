@@ -72,6 +72,14 @@ TRANSCRIPT_ACTORS = {
     "instagram": "steadyfetch~instagram-reel-transcript-scraper",
 }
 
+# Platforms whose content is written, not spoken: a transcript criterion does
+# not apply to them and must not be scored as a failure.
+TEXT_ONLY_PLATFORMS = ("x", "reddit", "stackexchange", "hackernews", "github")
+
+# Where an ordinary post is already a user speaking, rather than a publisher
+# promoting. On these, posts satisfy the "user comments" criterion by themselves.
+POST_IS_USER_VOICE = ("x", "reddit", "stackexchange", "hackernews", "github")
+
 
 @dataclass
 class Check:
@@ -179,9 +187,17 @@ def verify_platform(platform: str, limit: int = 5,
     # ---- C02 comments ------------------------------------------------------
     c = _by_name(rep.checks, "comments")
     comments = [i for i in items if i.kind == "comment"]
+    posts = [i for i in items if i.kind == "post"]
     if comments:
         c.set(PASS, f"{len(comments)} comment item(s) retrieved",
               examples=[x.text[:70] for x in comments[:2]])
+    elif platform in POST_IS_USER_VOICE and posts:
+        # On YouTube/TikTok the post is a creator's video and the users are in
+        # the comments. On X and Reddit the post IS a user speaking, so posts
+        # satisfy this criterion on their own.
+        c.set(PASS, f"{len(posts)} post(s) retrieved; on {platform} a post is "
+                    f"itself a user voice, not publisher content",
+              examples=[x.text[:70] for x in posts[:2]])
     elif items:
         c.set(FAIL, "items returned but none are comments - only captions/metadata")
     else:
@@ -345,6 +361,8 @@ def verify_platform(platform: str, limit: int = 5,
               f"{'; Arabic available' if arabic else ''}) but the subtitle CDN host "
               f"is not reachable from this environment, so the text cannot be "
               f"downloaded yet", subtitle_languages=sorted(sub_langs))
+    elif platform in TEXT_ONLY_PLATFORMS:
+        c.set(NA, "text-only platform: there is nothing spoken to transcribe")
     elif platform in TRANSCRIPT_ACTORS:
         c.set(UNTESTED, f"a dedicated transcription actor exists "
                         f"({TRANSCRIPT_ACTORS[platform]}) but is not wired in")

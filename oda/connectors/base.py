@@ -81,6 +81,17 @@ def parse_published(value: Any) -> Optional[float]:
             return d.timestamp()
         except ValueError:
             continue
+    # X still emits Twitter's legacy format: "Mon Nov 16 07:01:17 +0000 2026".
+    # Parsed in the C locale so it does not depend on the machine's locale.
+    for fmt in ("%a %b %d %H:%M:%S %z %Y", "%a, %d %b %Y %H:%M:%S %z",
+                "%Y/%m/%d", "%d-%m-%Y", "%m/%d/%Y"):
+        try:
+            d = _dt.datetime.strptime(s, fmt)
+            if d.tzinfo is None:
+                d = d.replace(tzinfo=_dt.timezone.utc)
+            return d.timestamp()
+        except ValueError:
+            continue
     return None
 
 

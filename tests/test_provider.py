@@ -361,3 +361,56 @@ def test_posts_with_zero_comments_are_not_sent_to_the_comments_actor(conn_tiktok
     assert comment_calls, "the comments actor should still run"
     sent = comment_calls[0]["postURLs"]
     assert sent == ["https://tt/1"], f"the silent post must be skipped, got {sent}"
+
+
+def test_demo_rows_from_an_exhausted_free_tier_are_detected():
+    """When an actor's free monthly run limit is spent it returns placeholder
+    rows instead of failing. Treating those as 'no results' led to the wrong
+    diagnosis ('X is blocking us') when the real cause was a billing cap."""
+    from oda.connectors.provider import is_sentinel_row
+    assert is_sentinel_row({"demo": True}) == "demo=True"
+    assert is_sentinel_row({"limitExceeded": True})
+    assert is_sentinel_row({"subscriptionRequired": True})
+    # a real tweet is untouched even if the actor tags it
+    assert is_sentinel_row({"fullText": "a real tweet", "demo": False}) is None
+
+
+def test_x_uses_a_per_result_actor_not_a_per_run_one(monkeypatch):
+    """Per-run actors hit a monthly ceiling and then silently serve demo rows."""
+    from oda.connectors.provider import DEFAULT_ACTORS
+    assert DEFAULT_ACTORS["x"] not in ("apidojo~tweet-scraper",
+                                       "apidojo~twitter-scraper-lite")
+
+
+def test_vendor_advertising_rows_are_not_treated_as_market_evidence():
+    """One X actor injected 10 ad rows into a 15-row dataset. Left in, vendor
+    copy becomes 'what users are saying'."""
+    from oda.connectors.provider import is_sentinel_row
+    ad = {"id": "-1", "text": "From KaitoEasyAPI, a reminder: Our API pricing "
+                              "is based on the number of results"}
+    assert is_sentinel_row(ad)
+    assert is_sentinel_row({"id": "9", "text": "Our API pricing is per result"})
+    assert is_sentinel_row({"id": "9", "text": "please subscribe to a paid plan"})
+    # a merchant complaint that merely mentions pricing is NOT an ad
+    real = {"id": "123", "text": "باقة سلة غالية والتسعير مو واضح بالنسبة لي"}
+    assert is_sentinel_row(real) is None
+    assert is_sentinel_row({"id": "123", "text": "their pricing is too expensive"}) is None
+
+
+def test_placeholder_ids_are_rejected():
+    from oda.connectors.provider import is_sentinel_row
+    assert is_sentinel_row({"id": -1, "text": "anything"})
+    assert is_sentinel_row({"id": "0", "text": "anything"})
+    assert is_sentinel_row({"id": "7312", "text": "a real complaint"}) is None
+
+
+def test_a_reply_count_does_not_make_a_post_a_comment():
+    """Every tweet carries replyCount; that is not evidence it IS a reply."""
+    tweet = {"id": "1", "fullText": "our inventory sync is broken", "replyCount": 4}
+    assert map_item(tweet, "x").kind == "post"
+    reply = {"id": "2", "fullText": "same here", "isReply": True, "replyCount": 0}
+    assert map_item(reply, "x").kind == "comment"
+    threaded = {"id": "3", "fullText": "me too", "inReplyToId": "1"}
+    assert map_item(threaded, "x").kind == "comment"
+    ig_comment = {"id": "4", "text": "too expensive", "commentUrl": "https://ig/c/1"}
+    assert map_item(ig_comment, "instagram").kind == "comment"
